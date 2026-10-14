@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { IconName } from "@/content/types";
 import { Icon } from "./Icon";
 
@@ -23,35 +23,51 @@ const INNER = { rx: 0.25, ry: 0.36, speed: 0.01, count: 8 };
 
 /**
  * Órbita de tarjetas del hero. Solo anima transform/opacity/filter.
+ * - Decorativa en todos los viewports (aria-hidden, enlaces fuera del tab order): las mismas
+ *   áreas están enlazadas en la rejilla de servicios.
  * - Móvil: 8 tarjetas y 2 anillos.
- * - prefers-reduced-motion: sin animación, cuadrícula estática (ver CSS de .orbit).
- * - Se pausa cuando el hero sale de pantalla o la pestaña está oculta.
+ * - prefers-reduced-motion: sin animación, cuadrícula estática (ver CSS de .orbit) y ahí las
+ *   tarjetas vuelven a ser enlaces enfocables. Escucha cambios en vivo de la preferencia.
+ * - Se pausa cuando el hero sale de pantalla, la pestaña está oculta, hay foco dentro del hero
+ *   o el usuario pulsa «Pausar animación» (SC 2.2.2).
  */
 export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: string[] }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  // null = aún sin hidratar (se trata como decorativa y sin botón de pausa)
+  const [reduced, setReduced] = useState<boolean | null>(null);
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(false);
+  const ctl = useRef<{ start: () => void; stop: () => void } | null>(null);
+
+  useEffect(() => {
+    const mq = matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+    if (paused) ctl.current?.stop();
+    else ctl.current?.start();
+  }, [paused]);
 
   useEffect(() => {
     const root = rootRef.current, svg = svgRef.current;
-    if (!root || !svg) return;
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduce.matches) return;
+    if (!root || !svg || reduced !== false) return;
 
     const els = Array.from(root.querySelectorAll<HTMLElement>("[data-card]"));
-    const list = root.querySelector<HTMLElement>(".orbit-list")!;
     const innerEls = Array.from(innerRef.current?.querySelectorAll<HTMLElement>("[data-inner]") ?? []);
     let innerW = 0;
-    let W = 0, H = 0, mobile = false, active = 0, raf = 0, visible = true;
+    let W = 0, H = 0, mobile = false, active = 0, raf = 0, visible = true, focusInside = false;
     const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
     const sizes: number[] = [];
 
     const layout = () => {
       W = root.clientWidth; H = root.clientHeight; mobile = W < 768;
-      // En móvil la órbita es decorativa: tarjetas pequeñas en movimiento no son objetivos táctiles fiables.
-      // Las mismas áreas están enlazadas en la rejilla de servicios, justo debajo.
-      list.inert = mobile;
-      list.setAttribute("aria-hidden", String(mobile));
       active = mobile ? Math.min(8, els.length) : els.length;
       const w = mobile ? 72 : W < 1280 ? 96 : 116;
       els.forEach((el, i) => {
@@ -107,11 +123,19 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
       raf = requestAnimationFrame(frame);
     };
 
-    const start = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); };
+    const start = () => { if (!raf && visible && !document.hidden && !pausedRef.current && !focusInside) raf = requestAnimationFrame(frame); };
     const stop = () => { cancelAnimationFrame(raf); raf = 0; };
     const onMove = (e: PointerEvent) => { mouse.tx = e.clientX / innerWidth - 0.5; mouse.ty = e.clientY / innerHeight - 0.5; };
     const onVis = () => (document.hidden ? stop() : start());
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); else stop(); });
+
+    const hero = root.closest("section");
+    // Solo foco de teclado: un clic en el botón de pausa no debe impedir reanudar.
+    const onFocusIn = (e: Event) => { if (!(e.target as Element).matches(":focus-visible")) return; focusInside = true; stop(); };
+    const onFocusOut = () => { focusInside = false; start(); };
+    hero?.addEventListener("focusin", onFocusIn);
+    hero?.addEventListener("focusout", onFocusOut);
+    ctl.current = { start, stop };
 
     root.dataset.animated = "true";
     if (innerRef.current) innerRef.current.dataset.animated = "true";
@@ -124,10 +148,24 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
     document.addEventListener("visibilitychange", onVis);
     return () => {
       stop(); io.disconnect(); ro.disconnect();
+      ctl.current = null;
+      hero?.removeEventListener("focusin", onFocusIn);
+      hero?.removeEventListener("focusout", onFocusOut);
+      // Limpia los estilos inline para que el CSS de movimiento reducido (rejilla) mande.
+      delete root.dataset.animated;
+      if (innerRef.current) delete innerRef.current.dataset.animated;
+      for (const el of [...els, ...innerEls]) {
+        el.style.transform = el.style.opacity = el.style.filter = el.style.zIndex = "";
+        el.style.display = el.style.width = "";
+      }
+      svg.innerHTML = "";
       removeEventListener("pointermove", onMove);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, []);
+  }, [reduced]);
+
+  // Decorativa salvo en la rejilla estática de movimiento reducido
+  const decorative = reduced !== true;
 
   return (
     <>
@@ -142,11 +180,15 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
       )}
       <div ref={rootRef} className="orbit">
         <svg ref={svgRef} aria-hidden="true" className="orbit-arcs" />
-        <ul className="orbit-list" aria-label="Áreas de práctica destacadas">
+        <ul
+          className="orbit-list"
+          {...(decorative ? { "aria-hidden": true } : { "aria-label": "Áreas de práctica destacadas" })}
+        >
           {cards.map((c, i) => (
-            <li key={i} className="contents">
+            <li key={i}>
               <Link
                 href={c.href}
+                tabIndex={decorative ? -1 : undefined}
                 data-card
                 className={`orbit-card orbit-${c.kind}`}
               >
@@ -176,6 +218,17 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
           ))}
         </ul>
       </div>
+      {reduced === false && (
+        <button
+          type="button"
+          aria-pressed={paused}
+          onClick={() => setPaused((p) => !p)}
+          className="btn btn-ghost absolute right-4 bottom-4 z-20 min-h-11 bg-bg/70 px-3 backdrop-blur-sm sm:right-5 sm:bottom-6"
+        >
+          <span aria-hidden="true">{paused ? "▶" : "❚❚"}</span>
+          Pausar animación
+        </button>
+      )}
     </>
   );
 }

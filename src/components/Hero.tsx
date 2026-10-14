@@ -22,10 +22,8 @@ export function Hero() {
   const { hero, brand } = site;
   return (
     <section aria-labelledby="hero-title" className="hero relative isolate grid min-h-svh place-items-center overflow-hidden px-4 pt-24 pb-32 sm:px-5">
-      <OrbitCards cards={buildCards()} inner={site.areas.map((a) => a.image)} />
-
-      <div className="relative z-10 flex max-w-[1100px] flex-col items-center text-center">
-        <p data-reveal style={{ "--i": 0 } as React.CSSProperties} className="label-mono mb-5 inline-flex items-center gap-2.5 text-fg-2 max-sm:text-[10px] max-sm:tracking-[0.08em]">
+      <div className="relative z-10 flex max-w-[1100px] flex-col items-center text-center before:absolute before:-inset-x-6 before:-inset-y-8 before:-z-10 before:bg-[radial-gradient(ellipse_at_center,color-mix(in_oklab,var(--bg)_88%,transparent)_35%,transparent_75%)] before:content-['']">
+        <p data-reveal style={{ "--i": 0 } as React.CSSProperties} className="label-mono mb-5 inline-flex items-center gap-2.5 text-fg-2 max-sm:tracking-[0.08em]">
           <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />
           {hero.eyebrow}
         </p>
@@ -61,6 +59,8 @@ export function Hero() {
           ))}
         </p>
       </div>
+
+      <OrbitCards cards={buildCards()} inner={site.areas.map((a) => a.image)} />
 
       <HeroChrome />
       <p aria-hidden="true" className="label-mono absolute bottom-8 left-5 hidden text-fg-3 sm:block">↓ Desplazar</p>
