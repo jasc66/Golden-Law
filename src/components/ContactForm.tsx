@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { site } from "@/content";
 import { t } from "@/i18n";
 import { track } from "@/lib/analytics";
@@ -16,11 +16,18 @@ export function ContactForm({ defaultArea = "" }: { defaultArea?: string }) {
   const id = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
+  const okRef = useRef<HTMLDivElement>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
 
+  // Al enviar con éxito, el formulario desaparece: el foco pasa al mensaje de confirmación
+  useEffect(() => {
+    if (status === "ok") okRef.current?.focus();
+  }, [status]);
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (status === "sending") return; // aria-disabled no bloquea el envío por sí solo
     const fd = new FormData(e.currentTarget);
     const data = {
       name: fd.get("name"),
@@ -56,12 +63,12 @@ export function ContactForm({ defaultArea = "" }: { defaultArea?: string }) {
 
   const fid = (f: Field) => `${id}-${f}`;
   const describedBy = (f: Field, extra?: string) => [errors[f] && `${fid(f)}-err`, extra].filter(Boolean).join(" ") || undefined;
-  const input = "mt-2 block w-full min-h-12 border bg-transparent px-4 py-3 text-base text-fg placeholder:text-fg-3 focus:border-accent focus:outline-none";
+  const input = "mt-2 block w-full min-h-12 border bg-transparent px-4 py-3 text-base text-fg placeholder:text-fg-3 focus:border-accent focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
   const errCount = Object.keys(errors).length;
 
   if (status === "ok") {
     return (
-      <div role="status" className="border border-success/60 p-8">
+      <div ref={okRef} tabIndex={-1} role="status" className="border border-success/60 p-8 focus:outline-none">
         <p className="heading text-3xl">Gracias.</p>
         <p className="mt-3 text-fg-2">{t.form.success}</p>
         <button type="button" className="btn btn-ghost mt-6" onClick={() => setStatus("idle")}>Enviar otra consulta</button>
@@ -76,7 +83,11 @@ export function ContactForm({ defaultArea = "" }: { defaultArea?: string }) {
           <p className="font-medium text-danger">{t.form.errors.summary}</p>
           <ul className="mt-2 list-disc pl-5 text-fg-2">
             {(Object.keys(errors) as Field[]).map((f) => (
-              <li key={f}><a href={`#${fid(f)}`} className="underline">{errors[f]}</a></li>
+              <li key={f}><a
+                href={`#${fid(f)}`}
+                onClick={(ev) => { ev.preventDefault(); document.getElementById(fid(f))?.focus(); }}
+                className="underline"
+              >{errors[f]}</a></li>
             ))}
           </ul>
         </div>
@@ -90,7 +101,7 @@ export function ContactForm({ defaultArea = "" }: { defaultArea?: string }) {
 
       <div>
         <label htmlFor={fid("contact")} className="label-mono text-fg-2">{t.form.contact} <span aria-hidden="true">*</span></label>
-        <input id={fid("contact")} name="contact" autoComplete="email" inputMode="email" required aria-required="true" aria-invalid={!!errors.contact} aria-describedby={describedBy("contact", `${fid("contact")}-hint`)} className={cn(input, errors.contact ? "border-danger" : "border-line-strong")} />
+        <input id={fid("contact")} name="contact" required aria-required="true" aria-invalid={!!errors.contact} aria-describedby={describedBy("contact", `${fid("contact")}-hint`)} className={cn(input, errors.contact ? "border-danger" : "border-line-strong")} />
         <p id={`${fid("contact")}-hint`} className="mt-2 text-sm text-fg-3">Ej.: {site.contact.phoneDisplay} o nombre@correo.com</p>
         {errors.contact && <p id={`${fid("contact")}-err`} className="mt-1 text-sm text-danger">{errors.contact}</p>}
       </div>
@@ -126,11 +137,12 @@ export function ContactForm({ defaultArea = "" }: { defaultArea?: string }) {
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <button type="submit" disabled={status === "sending"} className="btn btn-primary disabled:opacity-60">
+        <button type="submit" aria-disabled={status === "sending"} className="btn btn-primary aria-disabled:cursor-wait aria-disabled:opacity-60">
           {status === "sending" ? t.form.sending : t.form.submit}
         </button>
         <p id={`${id}-conf`} className="text-sm text-fg-3">{t.form.confidential}</p>
       </div>
+      <div role="status" className="sr-only">{status === "sending" && t.form.sending}</div>
       <div aria-live="assertive" className="text-sm text-danger">{status === "error" && t.form.error}</div>
     </form>
   );

@@ -39,6 +39,13 @@ export function Header() {
     const panel = panelRef.current;
     panel?.querySelector<HTMLElement>("a")?.focus();
     document.body.style.overflow = "hidden";
+    // El resto de la página queda inerte mientras el menú está abierto (el header y su panel no).
+    const behind = Array.from(document.querySelectorAll<HTMLElement>("main#contenido, footer, [data-mobile-bar], [data-cookie-banner]"));
+    behind.forEach((el) => (el.inert = true));
+    // Si se pasa al diseño de escritorio, el menú móvil ya no existe: cerrar y restaurar el scroll.
+    const desktop = matchMedia("(min-width: 80rem)");
+    const onDesktop = () => desktop.matches && setOpen(false);
+    desktop.addEventListener("change", onDesktop);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setOpen(false);
@@ -54,6 +61,8 @@ export function Header() {
     document.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = "";
+      behind.forEach((el) => (el.inert = false));
+      desktop.removeEventListener("change", onDesktop);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);

@@ -50,8 +50,8 @@ export function ContactDock({ items, icons }: { items: DockItem[]; icons: Record
           const s = sizes[i];
           const showLabel = s > BASE + 22;
           return (
-            <li key={it.label} className="relative flex flex-col items-center">
-              <span aria-hidden="true" className={`label-mono pointer-events-none absolute -top-7 whitespace-nowrap bg-invert px-2 py-1 text-[10px] text-invert-fg transition-opacity ${showLabel ? "opacity-100" : "opacity-0"}`}>
+            <li key={it.label} className="group relative flex flex-col items-center">
+              <span aria-hidden="true" className={`label-mono pointer-events-none absolute -top-7 whitespace-nowrap bg-invert px-2 py-1 text-[0.6875rem] text-invert-fg transition-opacity group-focus-within:opacity-100 ${showLabel ? "opacity-100" : "opacity-0"}`}>
                 {it.label}
               </span>
               <a

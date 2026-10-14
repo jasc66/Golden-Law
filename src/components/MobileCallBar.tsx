@@ -6,7 +6,7 @@ import { TrackedLink } from "./TrackedLink";
 /** Barra fija inferior en móvil: llamar y WhatsApp siempre a mano. */
 export function MobileCallBar() {
   return (
-    <div className="glass fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-line pb-[env(safe-area-inset-bottom)] md:hidden">
+    <div data-mobile-bar className="glass fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-line pb-[env(safe-area-inset-bottom)] md:hidden">
       <TrackedLink event="click_call" href={`tel:${site.contact.phone}`} className="label-mono flex min-h-14 items-center justify-center gap-2 border-r border-line text-fg">
         <Icon name="phone" size={16} /> {t.cta.call}
       </TrackedLink>

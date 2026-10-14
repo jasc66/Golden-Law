@@ -43,12 +43,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a href="#contenido" className="label-mono fixed top-2 left-4 z-[100] -translate-y-24 bg-invert px-4 py-3 text-invert-fg focus:translate-y-0">
           {t.skip}
         </a>
+        <CookieBanner />
         <JsonLd data={legalServiceLd()} />
         <Header />
         <main id="contenido" tabIndex={-1} className="focus:outline-none">{children}</main>
         <Footer />
         <MobileCallBar />
-        <CookieBanner />
       </body>
     </html>
   );

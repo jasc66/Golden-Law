@@ -78,7 +78,13 @@ html {
   background: var(--bg);
   scroll-behavior: smooth;
   scroll-padding-top: 72px;
+  scroll-padding-bottom: 140px; /* barra de llamada móvil y banner de cookies fijos */
   -webkit-text-size-adjust: 100%;
+}
+@media (min-width: 768px) {
+  html {
+    scroll-padding-bottom: 24px;
+  }
 }
 body {
   background: var(--bg);
