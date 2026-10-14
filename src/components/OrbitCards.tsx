@@ -86,7 +86,9 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
         .join("");
     };
 
-    const frame = (t: number) => {
+    // Posiciona las tarjetas para el instante t (también se llama una vez al montar, para que no
+    // queden apiladas en la esquina hasta el primer frame o si la animación arranca pausada).
+    const place = (t: number) => {
       mouse.x += (mouse.tx - mouse.x) * 0.05;
       mouse.y += (mouse.ty - mouse.y) * 0.05;
       const ringCount = mobile ? 2 : 4;
@@ -121,8 +123,8 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
         el.style.opacity = (0.12 + depth * 0.26).toFixed(2);
         el.style.filter = `blur(${((1 - depth) * 1.6).toFixed(1)}px)`;
       }
-      raf = requestAnimationFrame(frame);
     };
+    const frame = (t: number) => { place(t); raf = requestAnimationFrame(frame); };
 
     const start = () => { if (!raf && visible && !document.hidden && !pausedRef.current && !focusInside) raf = requestAnimationFrame(frame); };
     const stop = () => { cancelAnimationFrame(raf); raf = 0; };
@@ -141,6 +143,7 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
     root.dataset.animated = "true";
     if (innerRoot) innerRoot.dataset.animated = "true";
     layout();
+    place(performance.now());
     start();
     io.observe(root);
     const ro = new ResizeObserver(layout);
@@ -224,7 +227,7 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
           type="button"
           aria-pressed={paused}
           onClick={() => setPaused((p) => !p)}
-          className="btn btn-ghost absolute right-4 bottom-4 z-20 min-h-11 bg-bg/70 px-3 backdrop-blur-sm sm:right-5 sm:bottom-6"
+          className="btn btn-ghost absolute bottom-20 left-1/2 z-20 min-h-11 -translate-x-1/2 bg-bg/70 px-3 backdrop-blur-sm sm:bottom-6"
         >
           <span aria-hidden="true">{paused ? "▶" : "❚❚"}</span>
           Pausar animación
