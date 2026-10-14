@@ -42,7 +42,7 @@ export default async function PostPage({ params }: PageProps<"/publicaciones/[sl
       <JsonLd data={{ "@context": "https://schema.org", "@type": "Article", headline: p.title, description: p.excerpt, datePublished: p.date, ...(author && { author: { "@type": "Person", name: author.name, url: abs(`/equipo/${author.slug}`) } }), publisher: { "@id": abs("/#organizacion") }, mainEntityOfPage: abs(`/publicaciones/${p.slug}`) }} />
       <PageHeader crumbs={[{ name: "Publicaciones", path: "/publicaciones" }, { name: p.title, path: `/publicaciones/${p.slug}` }]} eyebrow={areaName(p.area)} title={p.title}>
         <p className="label-mono mt-8 text-fg-3">
-          {author && <Link href={`/equipo/${author.slug}`} className="hover:text-fg">{author.name}</Link>} · <time dateTime={p.date}>{formatDate(p.date)}</time> · {readingTime(p)} min de lectura
+          {author && <Link href={`/equipo/${author.slug}`} className="underline underline-offset-4 hover:text-fg">{author.name}</Link>} · <time dateTime={p.date}>{formatDate(p.date)}</time> · {readingTime(p)} min de lectura
         </p>
       </PageHeader>
       <article className="mx-auto max-w-[1400px] px-4 pb-16 sm:px-6 lg:px-10">

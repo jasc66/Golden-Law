@@ -18,7 +18,7 @@ export function CasesExplorer({ cases, areas }: { cases: CaseResult[]; areas: Fi
         <FilterGroup label="Área" value={area} onChange={setArea} options={[{ value: "all", label: "Todas" }, ...areas]} />
         <FilterGroup label="Año" value={year} onChange={setYear} options={[{ value: "all", label: "Todos" }, ...years.map((y) => ({ value: y, label: y }))]} />
       </div>
-      <p className="sr-only" aria-live="polite">{list.length} casos</p>
+      <p className="sr-only" aria-live="polite">{list.length} {list.length === 1 ? "caso" : "casos"}</p>
       <Crossfade k={`${area}-${year}`}>
         {list.length ? (
           <ul className="grid grid-lines gap-px md:grid-cols-2 lg:grid-cols-3">

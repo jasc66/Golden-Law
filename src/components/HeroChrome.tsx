@@ -37,7 +37,7 @@ export function HeroChrome() {
       <div aria-hidden="true" className="ruler absolute top-24 right-3.5 bottom-32 hidden w-9 flex-col items-end justify-between text-fg-3 lg:flex [container-type:size]">
         <span ref={thumb} className="absolute top-0 right-0 h-0.5 w-[18px] bg-accent" />
         {Array.from({ length: 21 }, (_, i) => i * 5).map((n) => (
-          <span key={n} className="flex items-center gap-1.5 font-mono text-[9px] leading-none">
+          <span key={n} className="flex items-center gap-1.5 font-mono text-[0.6875rem] leading-none">
             {n % 10 === 0 ? n : ""}
             <span className={cn("h-px bg-line-strong", n % 10 ? "w-[5px]" : "w-2.5")} />
           </span>

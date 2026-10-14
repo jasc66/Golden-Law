@@ -5,7 +5,7 @@ import { t } from "@/i18n";
 export function Placeholder({ when = true, children }: { when?: boolean; children?: React.ReactNode }) {
   if (!showPlaceholders || !when) return null;
   return (
-    <span className="label-mono inline-flex items-center gap-1.5 border border-dashed border-accent px-1.5 py-1 text-[10px] text-accent">
+    <span className="label-mono inline-flex items-center gap-1.5 border border-dashed border-accent px-1.5 py-1 text-[0.6875rem] text-accent">
       <span aria-hidden="true">◇</span>
       {children ?? t.placeholder}
     </span>

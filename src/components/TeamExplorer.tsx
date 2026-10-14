@@ -21,7 +21,7 @@ export function TeamExplorer({ team, areas, cards }: { team: Lawyer[]; areas: Fi
         {langs.length > 1 && <FilterGroup label="Idioma" value={lang} onChange={setLang} options={[{ value: "all", label: "Todos" }, ...langs.map((l) => ({ value: l, label: l }))]} />}
         {offices.length > 1 && <FilterGroup label="Sede" value={office} onChange={setOffice} options={[{ value: "all", label: "Todas" }, ...offices.map((o) => ({ value: o, label: o }))]} />}
       </div>
-      <p className="sr-only" aria-live="polite">{list.length} profesionales</p>
+      <p className="sr-only" aria-live="polite">{list.length} {list.length === 1 ? "profesional" : "profesionales"}</p>
       <Crossfade k={`${area}-${lang}-${office}`}>
         {list.length ? (
           <ul className="blur-grid grid grid-lines gap-px sm:grid-cols-2 lg:grid-cols-3">

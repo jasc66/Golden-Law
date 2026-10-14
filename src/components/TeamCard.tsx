@@ -9,7 +9,7 @@ export function TeamCard({ lawyer, headingLevel = 3 }: { lawyer: Lawyer; heading
   return (
     <article className="group relative flex h-full flex-col bg-bg">
       <ViewTransition name={`lawyer-${lawyer.slug}`} share="morph" default="none">
-        <div><Portrait lawyer={lawyer} /></div>
+        <div><Portrait lawyer={lawyer} decorative /></div>
       </ViewTransition>
       <div className="flex flex-col gap-2 p-6">
         <H className="heading text-2xl">

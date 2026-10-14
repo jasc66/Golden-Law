@@ -70,6 +70,8 @@ export type Testimonial = {
   author: string;
   context: string;
   videoUrl?: string;
+  /** Subtítulos (WebVTT). Sin esto no se muestra el vídeo (SC 1.2.2). */
+  captionsUrl?: string;
   transcript?: string;
   placeholder?: boolean;
 };

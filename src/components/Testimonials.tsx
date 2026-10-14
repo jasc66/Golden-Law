@@ -8,10 +8,10 @@ export function Testimonials({ items }: { items: Testimonial[] }) {
       {items.map((t, i) => (
         <li key={i} className="bg-bg p-6 lg:p-10">
           <figure className="flex h-full flex-col gap-6">
-            {t.videoUrl && (
+            {t.videoUrl && t.captionsUrl && (
               <video controls preload="none" className="aspect-video w-full bg-surface-2">
                 <source src={t.videoUrl} />
-                <track kind="captions" srcLang="es" label="Español" />
+                <track kind="captions" srcLang="es" label="Español" src={t.captionsUrl} default />
               </video>
             )}
             <blockquote className="font-serif text-[clamp(24px,2.4vw,34px)] leading-tight italic">“{t.quote}”</blockquote>

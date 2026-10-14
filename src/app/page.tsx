@@ -24,7 +24,7 @@ export default function Home() {
 
       <Section id="servicios" eyebrow="Áreas de práctica" title="Lo que hacemos," emphasis="explicado con claridad."
         intro="Cada área tiene un proceso definido y un costo acordado por escrito antes de empezar."
-        action={<Link href="/areas" className="btn btn-ghost self-start">{t.cta.all} <Arrow /></Link>}>
+        action={<Link href="/areas" className="btn btn-ghost self-start">{t.cta.all}<span className="sr-only"> las áreas de práctica</span> <Arrow /></Link>}>
         <PracticeGrid areas={site.areas} />
       </Section>
 
@@ -33,7 +33,7 @@ export default function Home() {
       </Section>
 
       <Section id="resultados" eyebrow="Resultados" title="Casos que" emphasis="nos representan."
-        action={<Link href="/resultados" className="btn btn-ghost self-start">{t.cta.all} <Arrow /></Link>}>
+        action={<Link href="/resultados" className="btn btn-ghost self-start">{t.cta.all}<span className="sr-only"> los resultados</span> <Arrow /></Link>}>
         <ul className="grid grid-lines gap-px md:grid-cols-2 lg:grid-cols-4">
           {site.cases.slice(0, 4).map((c) => <li key={c.id}><CaseCard c={c} /></li>)}
         </ul>
@@ -41,7 +41,7 @@ export default function Home() {
       </Section>
 
       <Section id="equipo" eyebrow="Equipo" title="Quién lleva" emphasis="su caso."
-        action={<Link href="/equipo" className="btn btn-ghost self-start">{t.cta.all} <Arrow /></Link>}>
+        action={<Link href="/equipo" className="btn btn-ghost self-start">{t.cta.all}<span className="sr-only"> el equipo</span> <Arrow /></Link>}>
         <ul className="blur-grid grid grid-lines gap-px sm:grid-cols-2 lg:grid-cols-3">
           {site.team.slice(0, 3).map((l) => <li key={l.slug}><TeamCard lawyer={l} /></li>)}
         </ul>

@@ -36,7 +36,7 @@ export function StatBar({ stats }: { stats: Stat[] }) {
           <div key={s.label} className="flex flex-col-reverse gap-3 border-line px-4 py-10 odd:border-r sm:px-6 lg:border-r lg:px-10 lg:py-14 lg:last:border-r-0">
             <dt className="label-mono text-fg-2">
               {s.label}
-              {showPlaceholders && s.placeholder && <span aria-label=" (cifra por verificar)" className="text-accent"> *</span>}
+              {showPlaceholders && s.placeholder && <><span aria-hidden="true" className="text-accent"> *</span><span className="sr-only"> (cifra por verificar)</span></>}
             </dt>
             <dd className="font-display text-[clamp(44px,6vw,88px)] leading-none font-semibold tracking-[-0.04em] [font-stretch:118%]">
               {s.prefix}
@@ -47,7 +47,7 @@ export function StatBar({ stats }: { stats: Stat[] }) {
         ))}
       </dl>
       {anyPlaceholder && (
-        <p className="label-mono mx-auto max-w-[1400px] px-4 pb-6 text-[10px] text-accent sm:px-6 lg:px-10">* Cifra tomada del sitio anterior, pendiente de verificar con el bufete.</p>
+        <p className="label-mono mx-auto max-w-[1400px] px-4 pb-6 text-[0.6875rem] text-accent sm:px-6 lg:px-10">* Cifra tomada del sitio anterior, pendiente de verificar con el bufete.</p>
       )}
     </section>
   );
