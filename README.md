@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Golden Law · Plantilla web para bufetes
 
-## Getting Started
+Sitio de bufete de abogados en Next.js 16 (App Router), React 19, TypeScript y Tailwind CSS v4.
+Hero oscuro con órbita de tarjetas, modo claro/oscuro, 29 páginas estáticas, SEO con JSON-LD y accesibilidad WCAG 2.2 AA.
 
-First, run the development server:
+## Arranque
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # ajustar valores
+npm run dev                  # http://localhost:3000
+npm run build && npm start   # producción
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Cambiar de cliente (vender la plantilla)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Todo el contenido vive en `src/content/profiles/`. No hay textos del bufete dentro de los componentes.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Duplicar `src/content/profiles/demo.ts` (marca ficticia) con el nombre del cliente.
+2. Registrarlo en `src/content/index.ts`.
+3. Elegirlo con `NEXT_PUBLIC_SITE_PROFILE=<clave>`.
+4. Cuando todo el contenido esté confirmado: `NEXT_PUBLIC_SHOW_PLACEHOLDERS=false` para ocultar las marcas «contenido pendiente».
 
-## Learn More
+Perfiles incluidos: `golden-law` (por defecto, datos del sitio anterior) y `demo` (Arce Molina, ficticio).
 
-To learn more about Next.js, take a look at the following resources:
+## Variables de entorno
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Uso |
+|---|---|
+| `NEXT_PUBLIC_SITE_PROFILE` | `golden-law` o `demo` |
+| `NEXT_PUBLIC_SITE_URL` | URL pública para canonical, sitemap, Open Graph y JSON-LD |
+| `NEXT_PUBLIC_SHOW_PLACEHOLDERS` | `false` oculta las marcas de contenido pendiente |
+| `NEXT_PUBLIC_LOCALE` | `es` (por defecto) o `en` (textos de interfaz en `src/i18n/en.ts`) |
+| `CONTACT_WEBHOOK_URL` | **Obligatoria en producción.** Destino del formulario (Zapier, Make, n8n, Formspree…). Sin ella, `/api/contacto` responde 503 y el formulario muestra error para no perder consultas en silencio. |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Estructura
 
-## Deploy on Vercel
+```
+src/
+  app/                 rutas: /, /areas/[slug], /equipo/[slug], /resultados, /publicaciones/[slug],
+                       /sobre-nosotros, /contacto, /legal/[slug], /api/contacto, sitemap, robots
+  components/          Hero, OrbitCards, StatBar, PracticeGrid, TeamCard, CaseCard, Faq, ContactForm,
+                       Header, Footer, ThemeToggle, CtaBlock, ContactDock, MobileCallBar, CookieBanner…
+  content/             tipos + perfiles de contenido
+  i18n/                textos de interfaz es/en
+  lib/                 JSON-LD, analítica con consentimiento, esquema zod del formulario
+docs/                  prototipo aprobado del hero e informe de calidad
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Efectos de movimiento (motion-gestures-integrator)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Gesto | Dónde | Cómo se desactiva |
+|---|---|---|
+| Shared Element | Tarjeta de área → página del área (título e imagen) y retrato del equipo → perfil, con `<ViewTransition>` de React | `prefers-reduced-motion` anula las animaciones de View Transitions; sin soporte del navegador, navegación normal |
+| Crossfade | Filtros de resultados y equipo (`Crossfade.tsx`); cambio de tema claro/oscuro | Movimiento reducido: corte instantáneo |
+| Magnification | Dock de canales de contacto en el bloque final (`ContactDock.tsx`) | Movimiento reducido o táctil: tamaño fijo |
+| Blur | Rejillas de áreas, equipo y publicaciones (hover/foco); header y barras con vidrio | Movimiento reducido: sin desenfoque |
+
+## Calidad
+
+Ver [docs/INFORME.md](docs/INFORME.md): Lighthouse, axe y lista de contenido pendiente.
