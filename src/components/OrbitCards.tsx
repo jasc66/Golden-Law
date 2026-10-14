@@ -60,7 +60,8 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
     if (!root || !svg || reduced !== false) return;
 
     const els = Array.from(root.querySelectorAll<HTMLElement>("[data-card]"));
-    const innerEls = Array.from(innerRef.current?.querySelectorAll<HTMLElement>("[data-inner]") ?? []);
+    const innerRoot = innerRef.current;
+    const innerEls = Array.from(innerRoot?.querySelectorAll<HTMLElement>("[data-inner]") ?? []);
     let innerW = 0;
     let W = 0, H = 0, mobile = false, active = 0, raf = 0, visible = true, focusInside = false;
     const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -138,7 +139,7 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
     ctl.current = { start, stop };
 
     root.dataset.animated = "true";
-    if (innerRef.current) innerRef.current.dataset.animated = "true";
+    if (innerRoot) innerRoot.dataset.animated = "true";
     layout();
     start();
     io.observe(root);
@@ -153,7 +154,7 @@ export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: 
       hero?.removeEventListener("focusout", onFocusOut);
       // Limpia los estilos inline para que el CSS de movimiento reducido (rejilla) mande.
       delete root.dataset.animated;
-      if (innerRef.current) delete innerRef.current.dataset.animated;
+      if (innerRoot) delete innerRoot.dataset.animated;
       for (const el of [...els, ...innerEls]) {
         el.style.transform = el.style.opacity = el.style.filter = el.style.zIndex = "";
         el.style.display = el.style.width = "";
