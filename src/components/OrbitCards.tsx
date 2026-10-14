@@ -18,15 +18,19 @@ const RINGS = [
   { rx: 0.57, ry: 0.5, speed: -0.006, color: "var(--color-arc-green)", tilt: 10 },
 ];
 
+/** Anillo interior: solo fotos, más cerca del titular y detrás del texto (decorativo). */
+const INNER = { rx: 0.25, ry: 0.36, speed: 0.01, count: 8 };
+
 /**
  * Órbita de tarjetas del hero. Solo anima transform/opacity/filter.
  * - Móvil: 8 tarjetas y 2 anillos.
  * - prefers-reduced-motion: sin animación, cuadrícula estática (ver CSS de .orbit).
  * - Se pausa cuando el hero sale de pantalla o la pestaña está oculta.
  */
-export function OrbitCards({ cards }: { cards: OrbitCard[] }) {
+export function OrbitCards({ cards, inner = [] }: { cards: OrbitCard[]; inner?: string[] }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = rootRef.current, svg = svgRef.current;
@@ -36,6 +40,8 @@ export function OrbitCards({ cards }: { cards: OrbitCard[] }) {
 
     const els = Array.from(root.querySelectorAll<HTMLElement>("[data-card]"));
     const list = root.querySelector<HTMLElement>(".orbit-list")!;
+    const innerEls = Array.from(innerRef.current?.querySelectorAll<HTMLElement>("[data-inner]") ?? []);
+    let innerW = 0;
     let W = 0, H = 0, mobile = false, active = 0, raf = 0, visible = true;
     const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
     const sizes: number[] = [];
@@ -53,6 +59,8 @@ export function OrbitCards({ cards }: { cards: OrbitCard[] }) {
         el.style.width = `${w}px`;
         sizes[i] = w;
       });
+      innerW = mobile ? 52 : W < 1280 ? 72 : 84;
+      innerEls.forEach((el) => (el.style.width = `${innerW}px`));
       const rings = RINGS.slice(0, mobile ? 2 : 4);
       const sx = mobile ? 1.25 : 1;
       svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
@@ -85,6 +93,17 @@ export function OrbitCards({ cards }: { cards: OrbitCard[] }) {
         el.style.filter = `blur(${((1 - depth) * 2.2).toFixed(1)}px)`;
         el.style.zIndex = String(Math.round(depth * 10));
       }
+      const n = innerEls.length;
+      for (let i = 0; i < n; i++) {
+        const ang = (i / n) * Math.PI * 2 - t * 0.006 * INNER.speed;
+        const x = Math.cos(ang) * INNER.rx * W * sx, y = Math.sin(ang) * INNER.ry * H;
+        const depth = (Math.sin(ang) + 1) / 2;
+        const par = 6 + depth * 14, h = innerW * 1.25;
+        const el = innerEls[i];
+        el.style.transform = `translate3d(${W / 2 + x - innerW / 2 + mouse.x * par}px, ${H / 2 + y - h / 2 + mouse.y * par}px, 0) scale(${0.7 + depth * 0.35})`;
+        el.style.opacity = (0.12 + depth * 0.26).toFixed(2);
+        el.style.filter = `blur(${((1 - depth) * 1.6).toFixed(1)}px)`;
+      }
       raf = requestAnimationFrame(frame);
     };
 
@@ -95,6 +114,7 @@ export function OrbitCards({ cards }: { cards: OrbitCard[] }) {
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); else stop(); });
 
     root.dataset.animated = "true";
+    if (innerRef.current) innerRef.current.dataset.animated = "true";
     layout();
     start();
     io.observe(root);
@@ -110,41 +130,52 @@ export function OrbitCards({ cards }: { cards: OrbitCard[] }) {
   }, []);
 
   return (
-    <div ref={rootRef} className="orbit">
-      <svg ref={svgRef} aria-hidden="true" className="orbit-arcs" />
-      <ul className="orbit-list" aria-label="Áreas de práctica destacadas">
-        {cards.map((c, i) => (
-          <li key={i} className="contents">
-            <Link
-              href={c.href}
-              data-card
-              className={`orbit-card orbit-${c.kind}`}
-            >
-              {c.kind === "image" && (
-                <>
-                  <Image src={c.src} alt="" width={160} height={200} sizes="120px" />
-                  <span className="orbit-label">{c.label}</span>
+    <>
+      {inner.length > 0 && (
+        <div ref={innerRef} aria-hidden="true" className="orbit-inner">
+          {Array.from({ length: INNER.count }, (_, i) => (
+            <div key={i} data-inner className="orbit-inner-card">
+              <Image src={inner[i % inner.length]} alt="" width={120} height={150} sizes="90px" />
+            </div>
+          ))}
+        </div>
+      )}
+      <div ref={rootRef} className="orbit">
+        <svg ref={svgRef} aria-hidden="true" className="orbit-arcs" />
+        <ul className="orbit-list" aria-label="Áreas de práctica destacadas">
+          {cards.map((c, i) => (
+            <li key={i} className="contents">
+              <Link
+                href={c.href}
+                data-card
+                className={`orbit-card orbit-${c.kind}`}
+              >
+                {c.kind === "image" && (
+                  <>
+                    <Image src={c.src} alt="" width={160} height={200} sizes="120px" />
+                    <span className="orbit-label">{c.label}</span>
                 </>
-              )}
-              {c.kind === "stat" && (
-                <>
-                  <small>{c.label}</small>
-                  <b>{c.value}</b>
-                </>
-              )}
-              {c.kind === "note" && (
-                <>
-                  <Icon name={c.icon} size={18} className="shrink-0 text-accent" />
-                  <span>
-                    <span className="orbit-note-title">{c.title}</span>
+                )}
+                {c.kind === "stat" && (
+                  <>
                     <small>{c.label}</small>
-                  </span>
+                    <b>{c.value}</b>
                 </>
-              )}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+                )}
+                {c.kind === "note" && (
+                  <>
+                    <Icon name={c.icon} size={18} className="shrink-0 text-accent" />
+                    <span>
+                      <span className="orbit-note-title">{c.title}</span>
+                      <small>{c.label}</small>
+                    </span>
+                </>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 }

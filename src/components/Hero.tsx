@@ -22,7 +22,7 @@ export function Hero() {
   const { hero, brand } = site;
   return (
     <section aria-labelledby="hero-title" className="hero relative isolate grid min-h-svh place-items-center overflow-hidden px-4 pt-24 pb-32 sm:px-5">
-      <OrbitCards cards={buildCards()} />
+      <OrbitCards cards={buildCards()} inner={site.areas.map((a) => a.image)} />
 
       <div className="relative z-10 flex max-w-[1100px] flex-col items-center text-center">
         <p data-reveal style={{ "--i": 0 } as React.CSSProperties} className="label-mono mb-5 inline-flex items-center gap-2.5 text-fg-2 max-sm:text-[10px] max-sm:tracking-[0.08em]">
